@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Virtual 3D Laboratoriya — SilkroadLab</title>
+<link rel="stylesheet" href="styles.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+/* ─── RESET + BASE ─── */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0f1e;color:#e2e8f0;min-height:100vh;}
+
+/* ─── NAVBAR ─── */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  background:rgba(10,15,30,0.92);backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  padding:0 40px;height:68px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo-icon{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;}
+.nav-logo-name{font-size:0.95rem;font-weight:800;color:#fff;}
+.nav-logo-sub{font-size:0.55rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.05em;}
+.nav-links{display:flex;align-items:center;gap:4px;list-style:none;}
+.nav-links a{color:rgba(255,255,255,0.6);font-size:0.82rem;font-weight:500;padding:6px 12px;border-radius:6px;text-decoration:none;transition:.15s;}
+.nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(255,255,255,0.07);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.btn-nav{padding:8px 18px;border-radius:7px;font-size:0.78rem;font-weight:600;cursor:pointer;border:none;transition:.15s;}
+.btn-nav-ghost{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);}
+.btn-nav-ghost:hover{background:rgba(255,255,255,0.14);}
+.btn-nav-orange{background:#f97316;color:#fff;}
+.btn-nav-orange:hover{background:#ea580c;}
+
+/* ─── ADMIN BADGE ─── */
+.admin-bar{
+  background:linear-gradient(135deg,rgba(249,115,22,0.15),rgba(234,88,12,0.08));
+  border-bottom:1px solid rgba(249,115,22,0.25);
+  padding:10px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:68px;gap:12px;flex-wrap:wrap;
+}
+.admin-bar-left{display:flex;align-items:center;gap:10px;font-size:0.82rem;color:rgba(255,255,255,0.7);}
+.admin-badge{background:#f97316;color:#fff;padding:3px 12px;border-radius:20px;font-size:0.7rem;font-weight:700;display:flex;align-items:center;gap:5px;}
+.admin-bar-actions{display:flex;gap:8px;}
+.ab-btn{padding:7px 16px;border-radius:7px;font-size:0.78rem;font-weight:600;cursor:pointer;border:none;transition:.15s;display:flex;align-items:center;gap:6px;}
+.ab-add{background:#f97316;color:#fff;}.ab-add:hover{background:#ea580c;}
+.ab-manage{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.15);}.ab-manage:hover{background:rgba(255,255,255,0.16);}
+
+/* ─── HERO ─── */
+.lab-hero{
+  padding:80px 40px 60px;
+  text-align:center;
+  position:relative;overflow:hidden;
+  margin-top:68px;
+}
+.lab-hero.has-admin-bar{margin-top:0;}
+.lab-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(59,130,246,0.12) 0%,transparent 70%);
+}
+.lab-hero-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);
+  color:#93c5fd;padding:5px 14px;border-radius:20px;
+  font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;
+  margin-bottom:18px;
+}
+.lab-hero h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;color:#fff;margin-bottom:14px;line-height:1.2;}
+.lab-hero h1 span{color:#f97316;}
+.lab-hero p{font-size:0.92rem;color:rgba(255,255,255,0.55);max-width:560px;margin:0 auto 28px;line-height:1.7;}
+.hero-stats{display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap;}
+.hs{text-align:center;}
+.hs-val{font-size:1.4rem;font-weight:800;color:#fff;display:block;}
+.hs-lbl{font-size:0.7rem;color:rgba(255,255,255,0.4);}
+
+/* ─── FILTER BAR ─── */
+.filter-bar{
+  display:flex;align-items:center;gap:10px;
+  padding:0 40px;margin-bottom:28px;flex-wrap:wrap;
+}
+.filter-search{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;padding:8px 14px;flex:1;max-width:280px;
+}
+.filter-search input{background:none;border:none;outline:none;color:#fff;font-size:0.82rem;width:100%;}
+.filter-search input::placeholder{color:rgba(255,255,255,0.3);}
+.filter-search i{color:rgba(255,255,255,0.35);font-size:0.82rem;}
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap;}
+.ftab{padding:7px 16px;border-radius:7px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.55);transition:.15s;}
+.ftab:hover{border-color:rgba(255,255,255,0.25);color:#fff;}
+.ftab.active{background:#3b82f6;border-color:#3b82f6;color:#fff;}
+.sort-sel{padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(255,255,255,0.7);font-size:0.78rem;outline:none;cursor:pointer;}
+.sort-sel option{background:#1a1f2e;color:#fff;}
+
+/* ─── MAIN GRID ─── */
+.lab-main{padding:0 40px 60px;display:grid;grid-template-columns:1fr 340px;gap:24px;}
+.lab-main.no-sidebar{grid-template-columns:1fr;}
+
+/* ─── MAKET GRID ─── */
+.makets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
+
+/* ─── MAKET CARD ─── */
+.maket-card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;overflow:hidden;
+  transition:.2s;cursor:pointer;
+  position:relative;
+}
+.maket-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 40px rgba(0,0,0,0.4);
+  border-color:rgba(255,255,255,0.16);
+}
+.maket-thumb{
+  width:100%;height:200px;
+  position:relative;overflow:hidden;
+}
+.maket-thumb-canvas{
+  width:100%;height:100%;
+  background:linear-gradient(135deg,#0d1b2a 0%,#1a2744 50%,#0a1628 100%);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  transition:transform .4s ease;
+}
+.maket-card:hover .maket-thumb-canvas{transform:scale(1.03);}
+.maket-3d-scene{
+  position:relative;width:220px;height:140px;
+  transform-style:preserve-3d;
+  animation:float3d 4s ease-in-out infinite;
+}
+@keyframes float3d{0%,100%{transform:perspective(400px) rotateX(12deg) rotateY(-8deg) translateY(0);}50%{transform:perspective(400px) rotateX(10deg) rotateY(8deg) translateY(-8px);}}
+
+.arch-3d{
+  position:absolute;
+  border-top-left-radius:50% 60%;
+  border-top-right-radius:50% 60%;
+}
+
+/* Dome shape SVG-based 3D */
+.maket-svg-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+
+.maket-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 40%,rgba(10,15,30,0.95) 100%);
+}
+.maket-tag{
+  position:absolute;top:10px;left:10px;
+  padding:3px 10px;border-radius:20px;
+  font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+}
+.tag-free{background:rgba(16,185,129,0.9);color:#fff;}
+.tag-paid{background:rgba(249,115,22,0.9);color:#fff;}
+.tag-premium{background:rgba(139,92,246,0.9);color:#fff;}
+.tag-new{background:rgba(59,130,246,0.9);color:#fff;}
+
+.maket-3d-badge{
+  position:absolute;top:10px;right:10px;
+  background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.8);
+  padding:4px 9px;border-radius:6px;
+  font-size:0.62rem;font-weight:600;
+  display:flex;align-items:center;gap:4px;
+}
+
+/* admin buttons on card */
+.admin-card-btns{
+  position:absolute;top:10px;right:10px;
+  display:flex;gap:5px;
+  opacity:0;transition:.2s;
+}
+.maket-card:hover .admin-card-btns{opacity:1;}
+.acb{width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.72rem;transition:.15s;}
+.acb-edit{background:rgba(59,130,246,0.85);color:#fff;}.acb-edit:hover{background:#3b82f6;}
+.acb-del{background:rgba(239,68,68,0.85);color:#fff;}.acb-del:hover{background:#ef4444;}
+.acb-price{background:rgba(249,115,22,0.85);color:#fff;}.acb-price:hover{background:#f97316;}
+
+.maket-body{padding:16px;}
+.maket-name{font-size:0.92rem;font-weight:700;color:#fff;margin-bottom:5px;}
+.maket-location{font-size:0.72rem;color:rgba(255,255,255,0.4);margin-bottom:8px;display:flex;align-items:center;gap:4px;}
+.maket-desc{font-size:0.75rem;color:rgba(255,255,255,0.5);line-height:1.55;margin-bottom:12px;}
+.maket-meta{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.maket-meta span{display:flex;align-items:center;gap:4px;font-size:0.68rem;color:rgba(255,255,255,0.4);}
+.maket-footer{display:flex;align-items:center;justify-content:space-between;}
+.maket-price{font-size:0.95rem;font-weight:800;color:#fff;}
+.maket-price.free{color:#10b981;}
+.maket-price sub{font-size:0.62rem;font-weight:400;color:rgba(255,255,255,0.4);}
+.btn-start{padding:8px 18px;border-radius:7px;font-size:0.75rem;font-weight:700;cursor:pointer;border:none;transition:.15s;display:flex;align-items:center;gap:5px;}
+.btn-start-orange{background:#f97316;color:#fff;}.btn-start-orange:hover{background:#ea580c;}
+.btn-start-blue{background:rgba(59,130,246,0.2);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);}.btn-start-blue:hover{background:#3b82f6;color:#fff;border-color:#3b82f6;}
+.btn-start-locked{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);cursor:not-allowed;}
+
+/* ─── SIDEBAR (foydalanuvchi) ─── */
+.lab-sidebar{display:flex;flex-direction:column;gap:16px;}
+.sidebar-panel{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px;}
+.sp-title{font-size:0.82rem;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.sp-title i{color:#f97316;}
+.progress-item{margin-bottom:12px;}
+.pi-top{display:flex;justify-content:space-between;margin-bottom:5px;}
+.pi-name{font-size:0.75rem;color:rgba(255,255,255,0.7);}
+.pi-pct{font-size:0.75rem;font-weight:700;color:#fff;}
+.pi-bar{height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;}
+.pi-fill{height:100%;border-radius:3px;}
+.score-ring{display:flex;align-items:center;gap:14px;padding:12px 0;}
+.ring-wrap{position:relative;width:64px;height:64px;flex-shrink:0;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-val{font-size:0.9rem;font-weight:800;color:#fff;}
+.ring-lbl{font-size:0.5rem;color:rgba(255,255,255,0.45);}
+.score-info-title{font-size:0.82rem;font-weight:700;color:#fff;margin-bottom:2px;}
+.score-info-sub{font-size:0.7rem;color:rgba(255,255,255,0.4);}
+.recent-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.recent-item:last-child{border:none;}
+.ri-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;}
+.ri-name{font-size:0.75rem;font-weight:600;color:rgba(255,255,255,0.8);flex:1;}
+.ri-score{font-size:0.72rem;font-weight:700;color:#10b981;}
+
+/* ─── VIEWER MODAL ─── */
+.viewer-overlay{
+  display:none;position:fixed;inset:0;z-index:2000;
+  background:rgba(5,8,20,0.96);backdrop-filter:blur(8px);
+  flex-direction:column;
+}
+.viewer-overlay.open{display:flex;}
+.viewer-topbar{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 24px;
+  background:rgba(255,255,255,0.04);
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.viewer-title{font-size:0.95rem;font-weight:700;color:#fff;flex:1;}
+.viewer-controls{display:flex;gap:8px;align-items:center;}
+.vc-btn{padding:7px 14px;border-radius:7px;font-size:0.75rem;font-weight:600;cursor:pointer;border:none;transition:.15s;display:flex;align-items:center;gap:5px;}
+.vc-close{background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);}.vc-close:hover{background:#ef4444;color:#fff;border-color:#ef4444;}
+.vc-action{background:rgba(249,115,22,0.2);color:#fdba74;border:1px solid rgba(249,115,22,0.3);}.vc-action:hover{background:#f97316;color:#fff;border-color:#f97316;}
+
+.viewer-body{flex:1;display:grid;grid-template-columns:1fr 300px;overflow:hidden;}
+.viewer-3d{flex:1;position:relative;overflow:hidden;background:radial-gradient(ellipse 100% 100% at 50% 50%,#0d1b3e 0%,#050810 100%);}
+.viewer-3d-canvas{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;}
+
+/* 3D animated building */
+.bld-3d{
+  position:relative;
+  transform-style:preserve-3d;
+  animation:rotate3d 20s linear infinite;
+}
+@keyframes rotate3d{from{transform:perspective(800px) rotateY(0deg) rotateX(8deg);}to{transform:perspective(800px) rotateY(360deg) rotateX(8deg);}}
+
+/* particles */
+.particle{
+  position:absolute;width:2px;height:2px;
+  border-radius:50%;background:#3b82f6;
+  animation:particleFloat linear infinite;
+  opacity:0.6;
+}
+@keyframes particleFloat{0%{transform:translateY(0) translateX(0);opacity:0;}20%{opacity:.6;}80%{opacity:.6;}100%{transform:translateY(-300px) translateX(var(--dx));opacity:0;}}
+
+.viewer-info{background:rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.07);padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;}
+.vi-section{margin-bottom:4px;}
+.vi-section-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,0.35);margin-bottom:8px;}
+.vi-name{font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:4px;}
+.vi-loc{font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+.vi-desc{font-size:0.78rem;color:rgba(255,255,255,0.55);line-height:1.65;}
+.vi-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.vi-stat{background:rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;}
+.vi-stat-val{font-size:1rem;font-weight:800;color:#fff;display:block;}
+.vi-stat-lbl{font-size:0.65rem;color:rgba(255,255,255,0.4);}
+.vi-task{background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:12px;}
+.vi-task-title{font-size:0.75rem;font-weight:700;color:#fb923c;margin-bottom:6px;}
+.vi-task-item{display:flex;align-items:center;gap:7px;font-size:0.73rem;color:rgba(255,255,255,0.6);margin-bottom:5px;}
+.vi-task-item:last-child{margin-bottom:0;}
+.vi-task-item i{font-size:0.65rem;color:#10b981;flex-shrink:0;}
+.vi-task-item i.locked{color:rgba(255,255,255,0.2);}
+.vi-score{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:12px;}
+.vi-score-title{font-size:0.75rem;font-weight:700;color:#86efac;margin-bottom:8px;}
+
+/* 3D navigation buttons */
+.nav-3d{
+  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;
+  background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;padding:8px;
+}
+.n3d-btn{width:36px;height:36px;border-radius:7px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.82rem;transition:.15s;}
+.n3d-btn:hover{background:rgba(255,255,255,0.15);color:#fff;}
+.n3d-btn.active{background:#f97316;border-color:#f97316;color:#fff;}
+.speed-label{font-size:0.65rem;color:rgba(255,255,255,0.4);display:flex;align-items:center;padding:0 4px;}
+
+/* ─── ADMIN PANEL ─── */
+.admin-panel-overlay{display:none;position:fixed;inset:0;z-index:1500;background:rgba(5,8,20,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+.admin-panel-overlay.open{display:flex;}
+.admin-panel{background:#0f172a;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:28px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;position:relative;animation:slideUp .2s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.ap-title{font-size:1rem;font-weight:800;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.ap-sub{font-size:0.75rem;color:rgba(255,255,255,0.4);margin-bottom:20px;}
+.ap-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;cursor:pointer;color:rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;font-size:0.85rem;}
+.ap-close:hover{background:rgba(255,255,255,0.15);color:#fff;}
+.ap-fg{margin-bottom:14px;}
+.ap-lbl{display:block;font-size:0.74rem;font-weight:600;color:rgba(255,255,255,0.6);margin-bottom:5px;}
+.ap-inp,.ap-sel,.ap-txt{width:100%;padding:10px 13px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:0.85rem;outline:none;transition:.15s;font-family:inherit;}
+.ap-inp:focus,.ap-sel:focus,.ap-txt:focus{border-color:#f97316;box-shadow:0 0 0 3px rgba(249,115,22,.1);}
+.ap-inp::placeholder,.ap-txt::placeholder{color:rgba(255,255,255,0.25);}
+.ap-sel option{background:#1a1f2e;color:#fff;}
+.ap-txt{min-height:75px;resize:vertical;}
+.ap-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ap-price-toggle{display:flex;align-items:center;gap:10px;padding:10px 13px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:8px;cursor:pointer;transition:.15s;}
+.ap-price-toggle:hover{border-color:rgba(255,255,255,0.16);}
+.ap-price-toggle input[type=checkbox]{accent-color:#f97316;width:15px;height:15px;cursor:pointer;}
+.ap-price-toggle label{font-size:0.82rem;color:rgba(255,255,255,0.7);cursor:pointer;}
+.ap-actions{display:flex;gap:10px;margin-top:6px;}
+.ap-cancel{flex:1;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.6);transition:.15s;}
+.ap-cancel:hover{background:rgba(255,255,255,0.1);}
+.ap-submit{flex:2;padding:10px;background:#f97316;border:none;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;color:#fff;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.ap-submit:hover{background:#ea580c;}
+
+/* Admin manage list */
+.manage-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;margin-bottom:7px;transition:.15s;}
+.manage-item:hover{border-color:rgba(255,255,255,0.14);}
+.mi-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.mi-name{font-size:0.82rem;font-weight:700;color:#fff;flex:1;}
+.mi-price{font-size:0.78rem;color:#f97316;font-weight:600;margin-right:8px;}
+.mi-actions{display:flex;gap:5px;}
+.mi-btn{width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.72rem;transition:.15s;}
+.mi-edit{background:rgba(59,130,246,0.2);color:#93c5fd;}.mi-edit:hover{background:#3b82f6;color:#fff;}
+.mi-price-btn{background:rgba(249,115,22,0.2);color:#fb923c;}.mi-price-btn:hover{background:#f97316;color:#fff;}
+.mi-del{background:rgba(239,68,68,0.2);color:#fca5a5;}.mi-del:hover{background:#ef4444;color:#fff;}
+
+/* Toast */
+.toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:#111827;color:#fff;padding:12px 20px;border-radius:9px;font-size:0.82rem;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:0 8px 28px rgba(0,0,0,.3);animation:toastIn .25s ease;border:1px solid rgba(255,255,255,0.08);}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toastOut{to{transform:translateX(110%);opacity:0}}
+
+/* empty state */
+.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(255,255,255,0.3);}
+.empty-state i{font-size:2.5rem;margin-bottom:14px;display:block;}
+
+/* responsive */
+@media(max-width:900px){
+  .navbar{padding:0 16px;}
+  .lab-hero,.admin-bar,.filter-bar,.lab-main{padding-left:16px;padding-right:16px;}
+  .lab-main{grid-template-columns:1fr;}
+  .viewer-body{grid-template-columns:1fr;}
+  .viewer-info{display:none;}
+  .makets-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">
+    <div ><img src="Logo.svg" width="60"></div>
+    <div><div class="nav-logo-name">SilkroadLab</div><div class="nav-logo-sub">Virtual 3D Laboratoriya</div></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Bosh sahifa</a></li>
+    <li><a href="about.html">Loyiha haqida</a></li>
+    <li><a href="scenarios.html">Ssenariylar</a></li>
+    <li><a href="ai.html">AI imkoniyatlari</a></li>
+    <li><a href="laboratory.html" class="active">Laboratoriya</a></li>
+    <li><a href="courses.html">Kurslar</a></li>
+    <li><a href="contact.html">Aloqa</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="btn-nav btn-nav-ghost" onclick="window.location.href='login.html'" id="navLoginBtn">Kirish</button>
+    <button class="btn-nav btn-nav-orange" id="navRegBtn" onclick="window.location.href='register.html'">Ro'yxatdan o'tish</button>
+  </div>
+</nav>
+
+<!-- ADMIN BAR (faqat admin ko'radi) -->
+<div class="admin-bar" id="adminBar" style="display:none;">
+  <div class="admin-bar-left">
+    <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Administrator rejimi</span>
+    <span>Siz admin sifatida kirgansiz — 3D maketlarni boshqarish mumkin</span>
+  </div>
+  <div class="admin-bar-actions">
+    <button class="ab-btn ab-add" onclick="openAdminPanel('add')">
+      <i class="fa-solid fa-plus"></i> Yangi 3D maket qo'shish
+    </button>
+    <button class="ab-btn ab-manage" onclick="openAdminPanel('manage')">
+      <i class="fa-solid fa-sliders"></i> Maketlarni boshqarish
+    </button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="lab-hero" id="labHero">
+  <div class="lab-hero-tag"><i class="fa-solid fa-cube"></i> Virtual 3D Laboratoriya</div>
+  <h1>O'zbekistonning tarixiy<br/>obidalarini <span>3D da o'rganing</span></h1>
+  <p>Imom Buxoriy maqbarasi, Registon, Bibi-Xonim va boshqa tarixiy obidalarning interaktiv 3D modellari orqali virtual amaliyot o'ting.</p>
+  <div class="hero-stats">
+    <div class="hs"><span class="hs-val" id="hsTotalMakets">0</span><span class="hs-lbl">3D Maket</span></div>
+    <div class="hs"><span class="hs-val" id="hsFree">0</span><span class="hs-lbl">Bepul</span></div>
+    <div class="hs"><span class="hs-val" id="hsUsers">1,247</span><span class="hs-lbl">Foydalanuvchi</span></div>
+    <div class="hs"><span class="hs-val">4K</span><span class="hs-lbl">3D sifat</span></div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" placeholder="Maket qidirish..." oninput="filterMakets(this.value)" id="searchInp"/>
+  </div>
+  <div class="filter-tabs">
+    <button class="ftab active" onclick="setCategory('all',this)">Barchasi</button>
+    <button class="ftab" onclick="setCategory('masjid',this)">Masjid</button>
+    <button class="ftab" onclick="setCategory('maqbara',this)">Maqbara</button>
+    <button class="ftab" onclick="setCategory('saroy',this)">Saroy</button>
+    <button class="ftab" onclick="setCategory('shahar',this)">Shahar ko'rinishi</button>
+    <button class="ftab" onclick="setCategory('bepul',this)">Bepul</button>
+  </div>
+  <select class="sort-sel" onchange="sortMakets(this.value)">
+    <option value="default">Tartiblash: Standart</option>
+    <option value="name">Nomi bo'yicha</option>
+    <option value="price-asc">Narx: pastdan</option>
+    <option value="price-desc">Narx: yuqoridan</option>
+    <option value="new">Yangi qo'shilgan</option>
+  </select>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="lab-main" id="labMain">
+  <!-- MAKETS GRID -->
+  <div class="makets-grid" id="maketsGrid"></div>
+
+  <!-- USER SIDEBAR -->
+  <div class="lab-sidebar" id="labSidebar">
+    <!-- My progress -->
+    <div class="sidebar-panel">
+      <div class="sp-title"><i class="fa-solid fa-chart-line"></i> Mening progressim</div>
+      <div class="score-ring">
+        <div class="ring-wrap">
+          <svg width="64" height="64" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="7"/>
+            <circle cx="32" cy="32" r="26" fill="none" stroke="#f97316" stroke-width="7"
+              stroke-dasharray="163" stroke-dashoffset="41" stroke-linecap="round"/>
+          </svg>
+          <div class="ring-text"><span class="ring-val">75%</span><span class="ring-lbl">umumiy</span></div>
+        </div>
+        <div>
+          <div class="score-info-title">Zo'r natija!</div>
+          <div class="score-info-sub">6 ta maket o'rganildi<br/>2 ta yakunlandi</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="pi-top"><span class="pi-name">Samarqand obidalari</span><span class="pi-pct">90%</span></div>
+        <div class="pi-bar"><div class="pi-fill" style="width:90%;background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="pi-top"><span class="pi-name">Buxoro obidalari</span><span class="pi-pct">65%</span></div>
+        <div class="pi-bar"><div class="pi-fill" style="width:65%;background:linear-gradient(90deg,#f97316,#fb923c);"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="pi-top"><span class="pi-name">Xiva obidalari</span><span class="pi-pct">40%</span></div>
+        <div class="pi-bar"><div class="pi-fill" style="width:40%;background:linear-gradient(90deg,#a855f7,#c084fc);"></div></div>
+      </div>
+    </div>
+    <!-- Recent -->
+    <div class="sidebar-panel">
+      <div class="sp-title"><i class="fa-solid fa-clock-rotate-left"></i> So'nggi o'rganilganlar</div>
+      <div class="recent-item">
+        <div class="ri-icon" style="background:rgba(59,130,246,0.15);font-size:1rem;">🕌</div>
+        <div class="ri-name">Registon maydoni</div>
+        <div class="ri-score">92%</div>
+      </div>
+      <div class="recent-item">
+        <div class="ri-icon" style="background:rgba(249,115,22,0.15);font-size:1rem;">🕍</div>
+        <div class="ri-name">Imom Buxoriy maqbarasi</div>
+        <div class="ri-score">88%</div>
+      </div>
+      <div class="recent-item">
+        <div class="ri-icon" style="background:rgba(16,185,129,0.15);font-size:1rem;">🏰</div>
+        <div class="ri-name">Ichan Qal'a, Xiva</div>
+        <div class="ri-score">79%</div>
+      </div>
+    </div>
+    <!-- Tips -->
+    <div class="sidebar-panel">
+      <div class="sp-title"><i class="fa-solid fa-lightbulb"></i> Maslahat</div>
+      <p style="font-size:0.75rem;color:rgba(255,255,255,0.5);line-height:1.6;">3D maket ichida ingliz tilida tarixiy ma'lumot berib mashq qiling. AI nutqingizni tahlil qiladi va feedback beradi.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 3D VIEWER MODAL -->
+<div class="viewer-overlay" id="viewerOverlay">
+  <div class="viewer-topbar">
+    <button class="vc-btn vc-close" onclick="closeViewer()">
+      <i class="fa-solid fa-arrow-left"></i> Orqaga
+    </button>
+    <div class="viewer-title" id="viewerTitle">Maket nomi</div>
+    <div class="viewer-controls">
+      <button class="vc-btn vc-action" onclick="toggleRotation()"><i class="fa-solid fa-rotate" id="rotIcon"></i> Aylanish</button>
+      <button class="vc-btn vc-action" onclick="resetView()"><i class="fa-solid fa-expand"></i> Reset</button>
+      <button class="vc-btn" style="background:rgba(16,185,129,0.2);color:#86efac;border:1px solid rgba(16,185,129,0.3);" onclick="startPractice()">
+        <i class="fa-solid fa-microphone"></i> Amaliyotni boshlash
+      </button>
+    </div>
+  </div>
+  <div class="viewer-body">
+    <div class="viewer-3d">
+      <div class="viewer-3d-canvas" id="viewer3dCanvas">
+        <!-- 3D SVG rendered here by JS -->
+      </div>
+      <!-- particles -->
+      <div id="particlesContainer"></div>
+      <!-- 3D nav -->
+      <div class="nav-3d">
+        <button class="n3d-btn" onclick="rotateLeft()" title="Chapga"><i class="fa-solid fa-rotate-left"></i></button>
+        <button class="n3d-btn" onclick="zoomIn()" title="Yaqinlashtirish"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+        <button class="n3d-btn active" id="autoRotBtn" onclick="toggleRotation()" title="Avtomatik aylanish"><i class="fa-solid fa-circle-play"></i></button>
+        <button class="n3d-btn" onclick="zoomOut()" title="Uzoqlashtirish"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+        <button class="n3d-btn" onclick="rotateRight()" title="O'ngga"><i class="fa-solid fa-rotate-right"></i></button>
+        <span class="speed-label" id="speedLabel">1x</span>
+        <button class="n3d-btn" onclick="changeSpeed()" title="Tezlik"><i class="fa-solid fa-gauge"></i></button>
+      </div>
+    </div>
+    <div class="viewer-info" id="viewerInfo">
+      <div class="vi-section">
+        <div class="vi-section-title">Maket haqida</div>
+        <div class="vi-name" id="viName">—</div>
+        <div class="vi-loc" id="viLoc"><i class="fa-solid fa-location-dot"></i> —</div>
+        <div class="vi-desc" id="viDesc">—</div>
+      </div>
+      <div class="vi-section">
+        <div class="vi-section-title">Statistika</div>
+        <div class="vi-stat-grid">
+          <div class="vi-stat"><span class="vi-stat-val" id="viYear">—</span><span class="vi-stat-lbl">Qurilgan yil</span></div>
+          <div class="vi-stat"><span class="vi-stat-val" id="viStyle">—</span><span class="vi-stat-lbl">Uslub</span></div>
+          <div class="vi-stat"><span class="vi-stat-val" id="viHeight">—</span><span class="vi-stat-lbl">Balandlik</span></div>
+          <div class="vi-stat"><span class="vi-stat-val" id="viArea">—</span><span class="vi-stat-lbl">Maydon</span></div>
+        </div>
+      </div>
+      <div class="vi-task">
+        <div class="vi-task-title"><i class="fa-solid fa-list-check"></i> Mashg'ulot topshiriqlari</div>
+        <div id="viTasks"></div>
+      </div>
+      <div class="vi-score">
+        <div class="vi-score-title"><i class="fa-solid fa-star"></i> Mening natijam</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:1.6rem;font-weight:800;color:#10b981;" id="viMyScore">—</div>
+          <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);">/ 100 ball<br/>AI baholagan</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL MODAL -->
+<div class="admin-panel-overlay" id="adminPanelOverlay">
+  <div class="admin-panel" id="adminPanel">
+    <button class="ap-close" onclick="closeAdminPanel()">✕</button>
+    <div class="ap-title" id="apTitle"><i class="fa-solid fa-plus" style="color:#f97316;"></i> Yangi 3D maket</div>
+    <div class="ap-sub" id="apSub">3D maket ma'lumotlarini kiriting</div>
+
+    <!-- ADD FORM -->
+    <div id="apAddForm">
+      <div class="ap-fg"><label class="ap-lbl">Maket nomi (UZ) *</label><input class="ap-inp" id="apName" placeholder="Masalan: Imom Buxoriy Maqbarasi"/></div>
+      <div class="ap-fg"><label class="ap-lbl">Joylashuv</label><input class="ap-inp" id="apLocation" placeholder="Samarqand, O'zbekiston"/></div>
+      <div class="ap-fg"><label class="ap-lbl">Tavsif</label><textarea class="ap-txt" id="apDesc" placeholder="Tarixiy ma'lumot va tavsif..."></textarea></div>
+      <div class="ap-row">
+        <div class="ap-fg"><label class="ap-lbl">Kategoriya</label>
+          <select class="ap-sel" id="apCat">
+            <option value="masjid">Masjid</option>
+            <option value="maqbara">Maqbara</option>
+            <option value="saroy">Saroy</option>
+            <option value="shahar">Shahar ko'rinishi</option>
+          </select>
+        </div>
+        <div class="ap-fg"><label class="ap-lbl">3D model turi</label>
+          <select class="ap-sel" id="apModel">
+            <option value="dome">Gumbaz (Dome)</option>
+            <option value="tower">Minora (Tower)</option>
+            <option value="arch">Ravoq (Arch)</option>
+            <option value="palace">Saroy (Palace)</option>
+            <option value="fortress">Qal'a (Fortress)</option>
+          </select>
+        </div>
+      </div>
+      <div class="ap-row">
+        <div class="ap-fg"><label class="ap-lbl">Asosiy rang</label>
+          <select class="ap-sel" id="apColor">
+            <option value="blue">Ko'k</option>
+            <option value="orange">To'q sariq</option>
+            <option value="gold">Oltin</option>
+            <option value="teal">Moviy</option>
+            <option value="purple">Binafsha</option>
+          </select>
+        </div>
+        <div class="ap-fg"><label class="ap-lbl">Qurilgan yil</label><input class="ap-inp" id="apYear" placeholder="XIV asr" /></div>
+      </div>
+      <div class="ap-row">
+        <div class="ap-fg"><label class="ap-lbl">Balandlik</label><input class="ap-inp" id="apHeight" placeholder="40m"/></div>
+        <div class="ap-fg"><label class="ap-lbl">Maydon</label><input class="ap-inp" id="apArea" placeholder="2,500 m²"/></div>
+      </div>
+      <div class="ap-fg">
+        <div class="ap-price-toggle" onclick="toggleFreeCheck()">
+          <input type="checkbox" id="apFreeCheck" onchange="togglePriceField()"/>
+          <label for="apFreeCheck">Bu maket bepul (hamma ko'ra oladi)</label>
+        </div>
+      </div>
+      <div class="ap-fg" id="apPriceField">
+        <label class="ap-lbl">Narx (so'm / oy)</label>
+        <input class="ap-inp" id="apPrice" type="number" placeholder="50000"/>
+      </div>
+      <div class="ap-fg"><label class="ap-lbl">Mashg'ulot topshiriqlari (har biri yangi qatorda)</label>
+        <textarea class="ap-txt" id="apTasks" placeholder="Ingliz tilida tarixiy ma'lumot bering&#10;Sayyohga qo'llanma sifatida gapiring&#10;Binoning asosiy xususiyatlarini tasvirlab bering"></textarea>
+      </div>
+      <div class="ap-actions">
+        <button class="ap-cancel" onclick="closeAdminPanel()">Bekor qilish</button>
+        <button class="ap-submit" onclick="saveMaket()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
+      </div>
+    </div>
+
+    <!-- MANAGE LIST -->
+    <div id="apManageList" style="display:none;">
+      <div id="manageItemsContainer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PRICE MODAL -->
+<div class="admin-panel-overlay" id="editPriceOverlay">
+  <div class="admin-panel" style="max-width:400px;">
+    <button class="ap-close" onclick="closeEditPrice()">✕</button>
+    <div class="ap-title"><i class="fa-solid fa-tag" style="color:#f97316;"></i> Narxni tahrirlash</div>
+    <div class="ap-sub" id="epMaketName">Maket nomi</div>
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;justify-content:space-between;">
+      <span style="font-size:0.78rem;color:rgba(255,255,255,0.5);">Hozirgi narx:</span>
+      <span style="font-size:0.88rem;font-weight:800;color:#fff;" id="epCurPrice">—</span>
+    </div>
+    <div class="ap-fg">
+      <div class="ap-price-toggle" onclick="toggleFreeCheck2()">
+        <input type="checkbox" id="epFreeCheck"/>
+        <label for="epFreeCheck">Bepul qilish</label>
+      </div>
+    </div>
+    <div class="ap-fg" id="epPriceField2">
+      <label class="ap-lbl">Yangi narx (so'm / oy)</label>
+      <div style="position:relative;">
+        <input class="ap-inp" id="epNewPrice" type="number" placeholder="50000" style="padding-right:55px;"/>
+        <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:0.72rem;color:rgba(255,255,255,0.3);">so'm</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;">
+      <button onclick="document.getElementById('epNewPrice').value=25000" style="padding:7px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;font-size:0.72rem;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.7);transition:.15s;" onmouseover="this.style.borderColor='#f97316';this.style.color='#f97316';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.7)';">25 000</button>
+      <button onclick="document.getElementById('epNewPrice').value=50000" style="padding:7px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;font-size:0.72rem;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.7);transition:.15s;" onmouseover="this.style.borderColor='#f97316';this.style.color='#f97316';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.7)';">50 000</button>
+      <button onclick="document.getElementById('epNewPrice').value=100000" style="padding:7px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;font-size:0.72rem;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.7);transition:.15s;" onmouseover="this.style.borderColor='#f97316';this.style.color='#f97316';" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.7)';">100 000</button>
+    </div>
+    <div class="ap-actions">
+      <button class="ap-cancel" onclick="closeEditPrice()">Bekor qilish</button>
+      <button class="ap-submit" onclick="saveEditPrice()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
+    </div>
+  </div>
+</div>
+<script>
+// ── MAKETLAR MA'LUMOTLARI ─────────────────────
+let makets = [
+  {
+    id:1, name:'Imom Buxoriy Maqbarasi',
+    location:'Samarqand, O\'zbekiston',
+    desc:'Hadis ilmining buyuk allomasi Muhammad al-Buxoriy maqbarasi. 1998-yilda to\'liq qayta qurilgan kompleks 10 gektardan ortiq maydonni egallaydi.',
+    cat:'maqbara', model:'dome', color:'teal',
+    year:'IX asr (1998 qayta qurilgan)', style:'Islom me\'morchiligi',
+    height:'40m', area:'10,000 m²',
+    free:true, price:0, isNew:true,
+    tasks:['Maqbara tarixi haqida ingliz tilida 2 daqiqa gapiring','Sayyohga qo\'llanma sifatida asosiy faktlarni aytib bering','Binoning me\'moriy xususiyatlarini tasvirlab bering'],
+    myScore:92
+  },
+  {
+    id:2, name:'Registon Maydoni',
+    location:'Samarqand, O\'zbekiston',
+    desc:'Samarqandning ramzi — uchta madrasadan iborat Registon maydoni. Ulug\'bek, Sherdor va Tillakori madrasalari XIV-XVII asrlarda qurilgan.',
+    cat:'saroy', model:'arch', color:'gold',
+    year:'XIV-XVII asrlar', style:'Temuriylar davri',
+    height:'33m', area:'25,000 m²',
+    free:false, price:50000, isNew:false,
+    tasks:['Uchta madrasa nomini va tarixini aytib bering','Registon maydoni ahamiyatini tushuntiring','Tillakori madrasasi haqida batafsil ma\'lumot bering'],
+    myScore:88
+  },
+  {
+    id:3, name:'Bibi-Xonim Masjidi',
+    location:'Samarqand, O\'zbekiston',
+    desc:'Amir Temur tomonidan qurilgan ulkan jome masjidi. Qurilish vaqtida dunyodagi eng katta masjidlardan biri hisoblangan.',
+    cat:'masjid', model:'dome', color:'blue',
+    year:'1399-1404 yillar', style:'Temuriylar davri',
+    height:'41m', area:'18,000 m²',
+    free:false, price:35000, isNew:false,
+    tasks:['Masjidning qurilish tarixi haqida gapiring','Amir Temur davri me\'morchiligini tushuntiring','Sayyohga masjid qoidalarini inglizcha tushuntiring'],
+    myScore:79
+  },
+  {
+    id:4, name:'Ichan Qal\'a — Xiva',
+    location:'Xiva, O\'zbekiston',
+    desc:'UNESCO Jahon merosi ro\'yxatiga kiritilgan qadimiy shahar. 400 dan ortiq tarixiy inshoot joylashgan.',
+    cat:'shahar', model:'fortress', color:'orange',
+    year:'V asr', style:'O\'rta Osiyo an\'anaviy',
+    height:'6-8m (devor)', area:'26 gektar',
+    free:false, price:75000, isNew:true,
+    tasks:['Ichan Qal\'a tarixi va ahamiyatini tushuntiring','UNESCO Jahon merosi nima ekanligini tushuntiring','Asosiy tarixiy inshootlarni sanab bering'],
+    myScore:null
+  },
+  {
+    id:5, name:'Kalon Minorasi',
+    location:'Buxoro, O\'zbekiston',
+    desc:'Buxoroning ramzi bo\'lmish Kalon minorasi 1127-yilda Arslon-Xon tomonidan qurilgan. Balandligi 47 metr.',
+    cat:'masjid', model:'tower', color:'purple',
+    year:'1127 yil', style:'Qoraxoniylar davri',
+    height:'47m', area:'14m² asos',
+    free:true, price:0, isNew:false,
+    tasks:['Minora qurilish tarixi va texnikasini tushuntiring','Buxoroning "Ilmlar shahri" degan nomini izohlab bering','Kalon majmuasi haqida inglizcha suhbat olib boring'],
+    myScore:null
+  },
+  {
+    id:6, name:'Go\'ri Amir Maqbarasi',
+    location:'Samarqand, O\'zbekiston',
+    desc:'Amir Temur va Temuriylar sulolasining dafn joyi. Ko\'k gumbazli maqbara XV asrning ajoyib namunasi.',
+    cat:'maqbara', model:'dome', color:'teal',
+    year:'1403-1404 yillar', style:'Temuriylar davri',
+    height:'34m', area:'1,750 m²',
+    free:false, price:45000, isNew:false,
+    tasks:['Temuriylar sulolasi haqida qisqacha ma\'lumot bering','Go\'ri Amir va Registon farqini tushuntiring','Sayyohga ziyorat qoidalarini inglizcha tushuntiring'],
+    myScore:null
+  },
+];
+
+let currentCategory = 'all';
+let currentSearch   = '';
+let currentSort     = 'default';
+let editingMaketId  = null;
+let isAdmin         = false;
+let isLoggedIn      = false;
+let viewerRotating  = true;
+let viewerSpeed     = 1;
+let rotationAngle   = 0;
+let animFrameId     = null;
+
+// ── 3D SVG GENERATORS ────────────────────────
+const colorMap = {
+  blue:  {main:'#3b82f6', light:'#93c5fd', dark:'#1d4ed8', glow:'rgba(59,130,246,0.4)'},
+  orange:{main:'#f97316', light:'#fdba74', dark:'#ea580c', glow:'rgba(249,115,22,0.4)'},
+  gold:  {main:'#f59e0b', light:'#fde68a', dark:'#d97706', glow:'rgba(245,158,11,0.4)'},
+  teal:  {main:'#14b8a6', light:'#5eead4', dark:'#0f766e', glow:'rgba(20,184,166,0.4)'},
+  purple:{main:'#a855f7', light:'#d8b4fe', dark:'#7c3aed', glow:'rgba(168,85,247,0.4)'},
+};
+
+function gen3DSVG(model, color, size=160) {
+  const c = colorMap[color] || colorMap.teal;
+  const s = size;
+  const h = size;
+  switch(model) {
+    case 'dome': return genDome(c, s, h);
+    case 'tower': return genTower(c, s, h);
+    case 'arch': return genArch(c, s, h);
+    case 'palace': return genPalace(c, s, h);
+    case 'fortress': return genFortress(c, s, h);
+    default: return genDome(c, s, h);
+  }
+}
+
+function genDome(c, s, h) {
+  return `<svg viewBox="0 0 ${s} ${h}" width="${s}" height="${h}" style="filter:drop-shadow(0 0 18px ${c.glow});">
+    <defs>
+      <radialGradient id="dg1"><stop offset="0%" stop-color="${c.light}"/><stop offset="100%" stop-color="${c.dark}"/></radialGradient>
+      <radialGradient id="dg2"><stop offset="0%" stop-color="${c.main}40"/><stop offset="100%" stop-color="${c.dark}90"/></radialGradient>
+    </defs>
+    <!-- Ground shadow -->
+    <ellipse cx="${s/2}" cy="${h-10}" rx="${s*0.38}" ry="8" fill="${c.dark}" opacity="0.4"/>
+    <!-- Main body -->
+    <rect x="${s*0.2}" y="${h*0.52}" width="${s*0.6}" height="${h*0.38}" fill="url(#dg2)" rx="3"/>
+    <!-- Arches on body -->
+    <path d="M${s*.28} ${h*.68} Q${s*.33} ${h*.55} ${s*.38} ${h*.68}" fill="none" stroke="${c.light}" stroke-width="1.2" opacity="0.6"/>
+    <path d="M${s*.46} ${h*.68} Q${s*.5} ${h*.55} ${s*.54} ${h*.68}" fill="none" stroke="${c.light}" stroke-width="1.2" opacity="0.6"/>
+    <path d="M${s*.62} ${h*.68} Q${s*.67} ${h*.55} ${s*.72} ${h*.68}" fill="none" stroke="${c.light}" stroke-width="1.2" opacity="0.6"/>
+    <!-- Main dome -->
+    <ellipse cx="${s/2}" cy="${h*0.52}" rx="${s*0.28}" ry="6" fill="${c.dark}" opacity="0.5"/>
+    <path d="M${s*.22} ${h*.52} Q${s*.3} ${h*.12} ${s/2} ${h*.1} Q${s*.7} ${h*.12} ${s*.78} ${h*.52}" fill="url(#dg1)" stroke="${c.light}" stroke-width="1"/>
+    <!-- Dome highlight -->
+    <path d="M${s*.35} ${h*.22} Q${s*.42} ${h*.13} ${s*.5} ${h*.12}" fill="none" stroke="${c.light}" stroke-width="1.5" opacity="0.5"/>
+    <!-- Small domes -->
+    <path d="M${s*.14} ${h*.52} Q${s*.19} ${h*.34} ${s*.24} ${h*.52}" fill="${c.main}" opacity="0.7"/>
+    <path d="M${s*.76} ${h*.52} Q${s*.81} ${h*.34} ${s*.86} ${h*.52}" fill="${c.main}" opacity="0.7"/>
+    <!-- Finial -->
+    <circle cx="${s/2}" cy="${h*.1}" r="3" fill="${c.light}"/>
+    <line x1="${s/2}" y1="${h*.1}" x2="${s/2}" y2="${h*.04}" stroke="${c.light}" stroke-width="1.5"/>
+    <!-- Decorative band -->
+    <rect x="${s*0.2}" y="${h*0.5}" width="${s*0.6}" height="3" fill="${c.main}" opacity="0.6"/>
+    <!-- Minaret left -->
+    <rect x="${s*0.08}" y="${h*0.3}" width="${s*0.06}" height="${h*0.6}" fill="${c.main}" opacity="0.7" rx="2"/>
+    <ellipse cx="${s*0.11}" cy="${h*0.3}" rx="${s*0.035}" ry="5" fill="${c.light}" opacity="0.8"/>
+    <!-- Minaret right -->
+    <rect x="${s*0.86}" y="${h*0.3}" width="${s*0.06}" height="${h*0.6}" fill="${c.main}" opacity="0.7" rx="2"/>
+    <ellipse cx="${s*0.89}" cy="${h*0.3}" rx="${s*0.035}" ry="5" fill="${c.light}" opacity="0.8"/>
+    <!-- Tile pattern -->
+    <line x1="${s*.2}" y1="${h*.62}" x2="${s*.8}" y2="${h*.62}" stroke="${c.light}" stroke-width="0.4" opacity="0.3"/>
+    <line x1="${s*.2}" y1="${h*.72}" x2="${s*.8}" y2="${h*.72}" stroke="${c.light}" stroke-width="0.4" opacity="0.3"/>
+  </svg>`;
+}
+
+function genTower(c, s, h) {
+  return `<svg viewBox="0 0 ${s} ${h}" width="${s}" height="${h}" style="filter:drop-shadow(0 0 18px ${c.glow});">
+    <defs><linearGradient id="tg1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="${c.light}"/><stop offset="100%" stop-color="${c.dark}"/></linearGradient></defs>
+    <ellipse cx="${s/2}" cy="${h-10}" rx="${s*0.22}" ry="7" fill="${c.dark}" opacity="0.4"/>
+    <!-- Base -->
+    <rect x="${s*0.3}" y="${h*0.78}" width="${s*0.4}" height="${h*0.15}" fill="${c.dark}" rx="4"/>
+    <!-- Main shaft -->
+    <rect x="${s*0.38}" y="${h*0.2}" width="${s*0.24}" height="${h*0.6}" fill="url(#tg1)" rx="3"/>
+    <!-- Bands -->
+    ${[0.28,0.38,0.48,0.58,0.68,0.78].map(y=>`<rect x="${s*.36}" y="${h*y}" width="${s*.28}" height="3" fill="${c.main}" opacity="0.5" rx="1"/>`).join('')}
+    <!-- Balcony -->
+    <rect x="${s*0.32}" y="${h*0.18}" width="${s*0.36}" height="5" fill="${c.light}" opacity="0.7" rx="2"/>
+    <!-- Cap -->
+    <path d="M${s*.35} ${h*.18} Q${s*.5} ${h*.04} ${s*.65} ${h*.18}" fill="${c.main}" stroke="${c.light}" stroke-width="1"/>
+    <circle cx="${s*.5}" cy="${h*.07}" r="3" fill="${c.light}"/>
+    <line x1="${s*.5}" y1="${h*.04}" x2="${s*.5}" y2="${h*.01}" stroke="${c.light}" stroke-width="1.5"/>
+    <!-- Windows -->
+    ${[0.32,0.44,0.56,0.68].map((y,i)=>`<rect x="${s*.46}" y="${h*y}" width="${s*.08}" height="${h*.07}" fill="${c.dark}" opacity="0.6" rx="2"/>
+    <path d="M${s*.46} ${h*(y+.04)} Q${s*.5} ${h*(y-.01)} ${s*.54} ${h*(y+.04)}" fill="${c.light}" opacity="0.3"/>`).join('')}
+  </svg>`;
+}
+
+function genArch(c, s, h) {
+  return `<svg viewBox="0 0 ${s} ${h}" width="${s}" height="${h}" style="filter:drop-shadow(0 0 18px ${c.glow});">
+    <defs><linearGradient id="ag1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${c.light}"/><stop offset="100%" stop-color="${c.dark}"/></linearGradient></defs>
+    <ellipse cx="${s/2}" cy="${h-8}" rx="${s*0.42}" ry="7" fill="${c.dark}" opacity="0.35"/>
+    <!-- Main facade -->
+    <rect x="${s*0.1}" y="${h*0.28}" width="${s*0.8}" height="${h*0.65}" fill="url(#ag1)" rx="3"/>
+    <!-- Central arch -->
+    <path d="M${s*.32} ${h*.92} L${s*.32} ${h*.5} Q${s*.5} ${h*.22} ${s*.68} ${h*.5} L${s*.68} ${h*.92}" fill="${c.dark}" opacity="0.7"/>
+    <!-- Side arches -->
+    <path d="M${s*.12} ${h*.92} L${s*.12} ${h*.55} Q${s*.22} ${h*.36} ${s*.3} ${h*.55}" fill="none" stroke="${c.light}" stroke-width="1.5" opacity="0.5"/>
+    <path d="M${s*.7} ${h*.55} Q${s*.78} ${h*.36} ${s*.88} ${h*.55} L${s*.88} ${h*.92}" fill="none" stroke="${c.light}" stroke-width="1.5" opacity="0.5"/>
+    <!-- Mosaic top -->
+    <rect x="${s*.1}" y="${h*.25}" width="${s*.8}" height="8" fill="${c.main}" opacity="0.6" rx="2"/>
+    <!-- Towers -->
+    <rect x="${s*.08}" y="${h*.08}" width="${s*.07}" height="${h*.75}" fill="${c.main}" opacity="0.8" rx="2"/>
+    <rect x="${s*.85}" y="${h*.08}" width="${s*.07}" height="${h*.75}" fill="${c.main}" opacity="0.8" rx="2"/>
+    <ellipse cx="${s*.115}" cy="${h*.08}" rx="${s*.04}" ry="6" fill="${c.light}" opacity="0.8"/>
+    <ellipse cx="${s*.885}" cy="${h*.08}" rx="${s*.04}" ry="6" fill="${c.light}" opacity="0.8"/>
+    <!-- Tile details -->
+    ${[0,1,2,3,4,5].map(i=>`<rect x="${s*(0.12+i*0.13)}" y="${h*.35}" width="${s*.09}" height="${h*.1}" fill="${c.main}" opacity="0.25" rx="1"/>`).join('')}
+    <!-- Top dome small -->
+    <path d="M${s*.4} ${h*.28} Q${s*.5} ${h*.1} ${s*.6} ${h*.28}" fill="${c.main}" opacity="0.8"/>
+    <circle cx="${s*.5}" cy="${h*.12}" r="3" fill="${c.light}"/>
+  </svg>`;
+}
+
+function genPalace(c, s, h) {
+  return `<svg viewBox="0 0 ${s} ${h}" width="${s}" height="${h}" style="filter:drop-shadow(0 0 18px ${c.glow});">
+    <defs><linearGradient id="pg1"><stop offset="0%" stop-color="${c.light}30"/><stop offset="100%" stop-color="${c.dark}80"/></linearGradient></defs>
+    <ellipse cx="${s/2}" cy="${h-8}" rx="${s*0.45}" ry="7" fill="${c.dark}" opacity="0.35"/>
+    <rect x="${s*.05}" y="${h*.35}" width="${s*.9}" height="${h*.58}" fill="url(#pg1)" rx="2"/>
+    <rect x="${s*.2}" y="${h*.25}" width="${s*.6}" height="${h*.45}" fill="${c.main}" opacity="0.3" rx="2"/>
+    <!-- Multiple domes -->
+    ${[0.25,0.38,0.5,0.62,0.75].map((x,i)=>`
+      <path d="M${s*(x-.07)} ${h*.25} Q${s*x} ${h*(0.06+i*.02)} ${s*(x+.07)} ${h*.25}" fill="${c.main}" opacity="${0.7+i*.03}"/>
+      <circle cx="${s*x}" cy="${h*(0.06+i*.02)}" r="2.5" fill="${c.light}"/>
+    `).join('')}
+    <rect x="${s*.05}" y="${h*.33}" width="${s*.9}" height="5" fill="${c.main}" opacity="0.5"/>
+    <!-- Windows row -->
+    ${[0.15,0.28,0.41,0.54,0.67,0.8].map(x=>`
+      <rect x="${s*(x-.035)}" y="${h*.5}" width="${s*.06}" height="${h*.1}" fill="${c.dark}" opacity="0.6" rx="2"/>
+      <path d="M${s*(x-.035)} ${h*.52} Q${s*x} ${h*.45} ${s*(x+.035)} ${h*.52}" fill="${c.light}" opacity="0.25"/>
+    `).join('')}
+    <!-- Corner towers -->
+    <rect x="${s*.02}" y="${h*.2}" width="${s*.1}" height="${h*.73}" fill="${c.main}" opacity="0.6" rx="2"/>
+    <rect x="${s*.88}" y="${h*.2}" width="${s*.1}" height="${h*.73}" fill="${c.main}" opacity="0.6" rx="2"/>
+    <path d="M${s*.02} ${h*.2} Q${s*.07} ${h*.06} ${s*.12} ${h*.2}" fill="${c.light}" opacity="0.7"/>
+    <path d="M${s*.88} ${h*.2} Q${s*.93} ${h*.06} ${s*.98} ${h*.2}" fill="${c.light}" opacity="0.7"/>
+  </svg>`;
+}
+
+function genFortress(c, s, h) {
+  return `<svg viewBox="0 0 ${s} ${h}" width="${s}" height="${h}" style="filter:drop-shadow(0 0 18px ${c.glow});">
+    <defs><linearGradient id="fg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${c.main}50"/><stop offset="100%" stop-color="${c.dark}aa"/></linearGradient></defs>
+    <ellipse cx="${s/2}" cy="${h-8}" rx="${s*0.46}" ry="7" fill="${c.dark}" opacity="0.35"/>
+    <!-- Outer wall -->
+    <rect x="${s*.05}" y="${h*.45}" width="${s*.9}" height="${h*.48}" fill="url(#fg1)" rx="2"/>
+    <!-- Battlements -->
+    ${[0.07,0.16,0.25,0.34,0.43,0.52,0.61,0.7,0.79,0.88].map(x=>`
+      <rect x="${s*x}" y="${h*.38}" width="${s*.06}" height="${h*.09}" fill="${c.main}" opacity="0.75" rx="1"/>
+    `).join('')}
+    <!-- Inner citadel -->
+    <rect x="${s*.25}" y="${h*.28}" width="${s*.5}" height="${h*.55}" fill="${c.main}" opacity="0.4" rx="2"/>
+    <!-- Gate arch -->
+    <path d="M${s*.38} ${h*.92} L${s*.38} ${h*.62} Q${s*.5} ${h*.48} ${s*.62} ${h*.62} L${s*.62} ${h*.92}" fill="${c.dark}" opacity="0.7"/>
+    <!-- Towers -->
+    ${[0.05,0.44,0.86].map(x=>`
+      <rect x="${s*x}" y="${h*.18}" width="${s*.1}" height="${h*.75}" fill="${c.main}" opacity="0.65" rx="2"/>
+      ${[0,1,2].map(i=>`<rect x="${s*(x+.01+i*.03)}" y="${h*.13}" width="${s*.025}" height="${h*.07}" fill="${c.light}" opacity="0.6" rx="1"/>`).join('')}
+    `).join('')}
+    <!-- Wall details -->
+    ${[0.52,0.62,0.72,0.82].map(y=>`<line x1="${s*.05}" y1="${h*y}" x2="${s*.95}" y2="${h*y}" stroke="${c.light}" stroke-width="0.5" opacity="0.2"/>`).join('')}
+  </svg>`;
+}
+
+// ── RENDER MAKETS ─────────────────────────────
+function fmtPrice(p) {
+  if(!p || p===0) return '<span class="maket-price free">Bepul</span>';
+  return `<span class="maket-price">${p.toLocaleString('uz-UZ')}<sub> so\'m/oy</sub></span>`;
+}
+
+function getFilteredMakets() {
+  return makets.filter(m => {
+    const matchCat = currentCategory==='all' ? true :
+      currentCategory==='bepul' ? m.free :
+      m.cat === currentCategory;
+    const matchSearch = currentSearch==='' ? true :
+      m.name.toLowerCase().includes(currentSearch.toLowerCase()) ||
+      m.location.toLowerCase().includes(currentSearch.toLowerCase());
+    return matchCat && matchSearch;
+  }).sort((a,b) => {
+    if(currentSort==='name') return a.name.localeCompare(b.name);
+    if(currentSort==='price-asc') return (a.price||0) - (b.price||0);
+    if(currentSort==='price-desc') return (b.price||0) - (a.price||0);
+    if(currentSort==='new') return (b.isNew?1:0) - (a.isNew?1:0);
+    return 0;
+  });
+}
+
+function renderMakets() {
+  const grid = document.getElementById('maketsGrid');
+  const data = getFilteredMakets();
+  document.getElementById('hsTotalMakets').textContent = makets.length;
+  document.getElementById('hsFree').textContent = makets.filter(m=>m.free).length;
+
+  if(!data.length) {
+    grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-cube"></i>Maketlar topilmadi</div>';
+    return;
+  }
+
+  grid.innerHTML = data.map(m => {
+    const tagClass = m.free ? 'tag-free' : m.price > 60000 ? 'tag-premium' : 'tag-paid';
+    const tagText  = m.free ? 'Bepul' : m.price > 60000 ? 'Premium' : 'Pullik';
+    const newBadge = m.isNew ? '<span class="maket-tag tag-new" style="left:auto;right:10px;top:44px;">Yangi</span>' : '';
+    const svg3d = gen3DSVG(m.model, m.color, 160);
+
+    let startBtn = '';
+    if(m.free || isLoggedIn) {
+      startBtn = `<button class="btn-start btn-start-orange" onclick="event.stopPropagation();openViewer(${m.id})">
+        <i class="fa-solid fa-cube"></i> 3D Ko'rish
+      </button>`;
+    } else {
+      startBtn = `<button class="btn-start btn-start-blue" onclick="event.stopPropagation();window.location.href='login.html'">
+        <i class="fa-solid fa-lock"></i> Kirish kerak
+      </button>`;
+    }
+
+    const adminBtns = isAdmin ? `
+      <div class="admin-card-btns">
+        <button class="acb acb-edit" onclick="event.stopPropagation();editMaket(${m.id})" title="Tahrirlash"><i class="fa-solid fa-pen"></i></button>
+        <button class="acb acb-price" onclick="event.stopPropagation();openEditPrice(${m.id})" title="Narx"><i class="fa-solid fa-tag"></i></button>
+        <button class="acb acb-del" onclick="event.stopPropagation();deleteMaket(${m.id})" title="O'chirish"><i class="fa-solid fa-trash"></i></button>
+      </div>` : '';
+
+    return `
+    <div class="maket-card" onclick="openViewer(${m.id})">
+      <div class="maket-thumb">
+        <div class="maket-thumb-canvas">
+          <div class="maket-svg-wrap">${svg3d}</div>
+        </div>
+        <div class="maket-overlay"></div>
+        <span class="maket-tag ${tagClass}">${tagText}</span>
+        ${newBadge}
+        <div class="maket-3d-badge"><i class="fa-solid fa-cube" style="font-size:0.55rem;"></i> 3D</div>
+        ${adminBtns}
+      </div>
+      <div class="maket-body">
+        <div class="maket-name">${m.name}</div>
+        <div class="maket-location"><i class="fa-solid fa-location-dot"></i> ${m.location}</div>
+        <div class="maket-desc">${m.desc.substring(0,100)}...</div>
+        <div class="maket-meta">
+          <span><i class="fa-solid fa-calendar"></i> ${m.year}</span>
+          <span><i class="fa-solid fa-ruler-vertical"></i> ${m.height}</span>
+          <span><i class="fa-solid fa-list-check"></i> ${m.tasks.length} topshiriq</span>
+        </div>
+        <div class="maket-footer">
+          ${fmtPrice(m.price)}
+          ${startBtn}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── 3D VIEWER ─────────────────────────────────
+function openViewer(id) {
+  const m = makets.find(x=>x.id===id);
+  if(!m) return;
+  if(!m.free && !isLoggedIn) { window.location.href='login.html'; return; }
+
+  document.getElementById('viewerTitle').textContent = m.name;
+  document.getElementById('viName').textContent = m.name;
+  document.getElementById('viLoc').innerHTML = '<i class="fa-solid fa-location-dot"></i> '+m.location;
+  document.getElementById('viDesc').textContent = m.desc;
+  document.getElementById('viYear').textContent = m.year;
+  document.getElementById('viStyle').textContent = m.style;
+  document.getElementById('viHeight').textContent = m.height;
+  document.getElementById('viArea').textContent = m.area;
+  document.getElementById('viMyScore').textContent = m.myScore ? m.myScore+'%' : 'Hali kelmagan';
+
+  document.getElementById('viTasks').innerHTML = m.tasks.map(t =>
+    `<div class="vi-task-item"><i class="fa-solid fa-circle-check"></i> ${t}</div>`
+  ).join('');
+
+  // Render big 3D
+  renderViewer3D(m);
+  spawnParticles(colorMap[m.color]||colorMap.teal);
+  document.getElementById('viewerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  viewerRotating = true;
+  viewerSpeed = 1;
+  rotationAngle = 0;
+  startRotation();
+}
+
+function renderViewer3D(m) {
+  const c = colorMap[m.color] || colorMap.teal;
+  const svg = gen3DSVG(m.model, m.color, 280);
+  const canvas = document.getElementById('viewer3dCanvas');
+  canvas.innerHTML = `
+    <div id="rotWrapper" style="transform-style:preserve-3d;animation:rotate3d ${20/viewerSpeed}s linear infinite;display:flex;align-items:center;justify-content:center;">
+      ${svg}
+    </div>
+    <div style="position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);
+      border-radius:8px;padding:8px 16px;font-size:0.72rem;color:rgba(255,255,255,0.5);text-align:center;">
+      🖱 Sichqoncha bilan aylantiring • Prokat uchun scroll qiling
+    </div>
+  `;
+}
+
+function spawnParticles(c) {
+  const container = document.getElementById('particlesContainer');
+  container.innerHTML = '';
+  container.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden;';
+  for(let i=0;i<25;i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left:${Math.random()*100}%;
+      bottom:${Math.random()*20}%;
+      animation-duration:${3+Math.random()*5}s;
+      animation-delay:${Math.random()*4}s;
+      --dx:${(Math.random()-0.5)*100}px;
+      background:${i%3===0 ? c.light : i%3===1 ? c.main : c.dark};
+      width:${1+Math.random()*3}px;
+      height:${1+Math.random()*3}px;
+    `;
+    container.appendChild(p);
+  }
+}
+
+let speeds = [0.5, 1, 2, 3];
+let speedIdx = 1;
+function changeSpeed() {
+  speedIdx = (speedIdx+1) % speeds.length;
+  viewerSpeed = speeds[speedIdx];
+  document.getElementById('speedLabel').textContent = viewerSpeed+'x';
+  const wrap = document.getElementById('rotWrapper');
+  if(wrap) wrap.style.animationDuration = (20/viewerSpeed)+'s';
+}
+function toggleRotation() {
+  viewerRotating = !viewerRotating;
+  const wrap = document.getElementById('rotWrapper');
+  const btn = document.getElementById('autoRotBtn');
+  if(wrap) wrap.style.animationPlayState = viewerRotating ? 'running' : 'paused';
+  if(btn) btn.classList.toggle('active', viewerRotating);
+  document.getElementById('rotIcon').className = viewerRotating ? 'fa-solid fa-pause' : 'fa-solid fa-rotate';
+}
+function startRotation(){}
+function resetView() {
+  const wrap = document.getElementById('rotWrapper');
+  if(wrap){wrap.style.animation='none';void wrap.offsetWidth;wrap.style.animation='';}
+  speedIdx=1; viewerSpeed=1;
+  document.getElementById('speedLabel').textContent='1x';
+  viewerRotating=true;
+  document.getElementById('rotIcon').className='fa-solid fa-rotate';
+}
+function rotateLeft(){changeSpeed();}
+function rotateRight(){changeSpeed();}
+function zoomIn(){
+  const wrap=document.getElementById('rotWrapper');
+  if(wrap){const s=parseFloat(wrap.style.scale||1)+0.15;wrap.style.scale=Math.min(s,2);}
+}
+function zoomOut(){
+  const wrap=document.getElementById('rotWrapper');
+  if(wrap){const s=parseFloat(wrap.style.scale||1)-0.15;wrap.style.scale=Math.max(s,0.4);}
+}
+function closeViewer() {
+  document.getElementById('viewerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  document.getElementById('particlesContainer').innerHTML='';
+}
+function startPractice() {
+  toast('Amaliyot boshlandi! AI nutqingizni tahlil qiladi.','success');
+}
+
+// ── FILTERS ───────────────────────────────────
+function setCategory(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderMakets();
+}
+function filterMakets(q) { currentSearch=q; renderMakets(); }
+function sortMakets(v) { currentSort=v; renderMakets(); }
+
+// ── ADMIN FUNCTIONS ───────────────────────────
+function openAdminPanel(mode) {
+  document.getElementById('adminPanelOverlay').classList.add('open');
+  if(mode==='add') {
+    document.getElementById('apTitle').innerHTML='<i class="fa-solid fa-plus" style="color:#f97316;"></i> Yangi 3D maket';
+    document.getElementById('apSub').textContent="3D maket ma'lumotlarini kiriting";
+    document.getElementById('apAddForm').style.display='block';
+    document.getElementById('apManageList').style.display='none';
+    document.getElementById('apSubmitBtn').textContent='Saqlash';
+    editingMaketId = null;
+    ['apName','apLocation','apDesc','apYear','apHeight','apArea','apPrice','apTasks'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    document.getElementById('apFreeCheck').checked = false;
+    document.getElementById('apPriceField').style.display='block';
+  } else {
+    document.getElementById('apTitle').innerHTML='<i class="fa-solid fa-sliders" style="color:#f97316;"></i> Maketlarni boshqarish';
+    document.getElementById('apSub').textContent="Barcha 3D maketlar ro'yxati";
+    document.getElementById('apAddForm').style.display='none';
+    document.getElementById('apManageList').style.display='block';
+    renderManageList();
+  }
+}
+function closeAdminPanel() { document.getElementById('adminPanelOverlay').classList.remove('open'); }
+
+function renderManageList() {
+  document.getElementById('manageItemsContainer').innerHTML = makets.map(m => `
+    <div class="manage-item">
+      <div class="mi-icon" style="background:${colorMap[m.color]?.main}20;font-size:1.1rem;">${m.cat==='masjid'?'🕌':m.cat==='maqbara'?'🕍':m.cat==='saroy'?'🏰':'🏛️'}</div>
+      <div class="mi-name">${m.name}</div>
+      <div class="mi-price">${m.free?'Bepul':m.price.toLocaleString('uz-UZ')+' so\'m'}</div>
+      <div class="mi-actions">
+        <button class="mi-btn mi-edit" onclick="editMaket(${m.id})" title="Tahrirlash"><i class="fa-solid fa-pen"></i></button>
+        <button class="mi-btn mi-price-btn" onclick="closeAdminPanel();openEditPrice(${m.id})" title="Narx"><i class="fa-solid fa-tag"></i></button>
+        <button class="mi-btn mi-del" onclick="deleteMaket(${m.id})" title="O'chirish"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleFreeCheck() {
+  const isChecked = document.getElementById('apFreeCheck').checked;
+  document.getElementById('apPriceField').style.display = isChecked ? 'none' : 'block';
+}
+function toggleFreeCheck2() {
+  const isChecked = document.getElementById('epFreeCheck').checked;
+  document.getElementById('epPriceField2').style.display = isChecked ? 'none' : 'block';
+}
+
+function saveMaket() {
+  const name = document.getElementById('apName').value.trim();
+  if(!name){toast('Maket nomini kiriting!','error');return;}
+  const isFree = document.getElementById('apFreeCheck').checked;
+  const tasksRaw = document.getElementById('apTasks').value.trim();
+  const tasks = tasksRaw ? tasksRaw.split('\n').filter(t=>t.trim()) : ['Bu maket haqida ingliz tilida gapiring'];
+
+  if(editingMaketId) {
+    const m = makets.find(x=>x.id===editingMaketId);
+    m.name = name;
+    m.location = document.getElementById('apLocation').value.trim() || m.location;
+    m.desc = document.getElementById('apDesc').value.trim() || m.desc;
+    m.cat = document.getElementById('apCat').value;
+    m.model = document.getElementById('apModel').value;
+    m.color = document.getElementById('apColor').value;
+    m.year = document.getElementById('apYear').value.trim() || m.year;
+    m.height = document.getElementById('apHeight').value.trim() || m.height;
+    m.area = document.getElementById('apArea').value.trim() || m.area;
+    m.free = isFree;
+    m.price = isFree ? 0 : (parseInt(document.getElementById('apPrice').value)||m.price);
+    m.tasks = tasks;
+    toast(name+' yangilandi!','success');
+  } else {
+    const newId = Math.max(...makets.map(m=>m.id)) + 1;
+    makets.unshift({
+      id:newId, name,
+      location: document.getElementById('apLocation').value.trim() || "O'zbekiston",
+      desc: document.getElementById('apDesc').value.trim() || "Tavsif mavjud emas.",
+      cat: document.getElementById('apCat').value,
+      model: document.getElementById('apModel').value,
+      color: document.getElementById('apColor').value,
+      year: document.getElementById('apYear').value.trim() || '—',
+      style: "O'rta Osiyo me'morchiligi",
+      height: document.getElementById('apHeight').value.trim() || '—',
+      area: document.getElementById('apArea').value.trim() || '—',
+      free: isFree,
+      price: isFree ? 0 : (parseInt(document.getElementById('apPrice').value)||0),
+      isNew: true, tasks, myScore: null
+    });
+    toast(name+' muvaffaqiyatli qo\'shildi!','success');
+  }
+  closeAdminPanel();
+  renderMakets();
+}
+
+function editMaket(id) {
+  editingMaketId = id;
+  const m = makets.find(x=>x.id===id);
+  document.getElementById('adminPanelOverlay').classList.add('open');
+  document.getElementById('apTitle').innerHTML='<i class="fa-solid fa-pen" style="color:#3b82f6;"></i> Maketni tahrirlash';
+  document.getElementById('apSub').textContent = m.name;
+  document.getElementById('apAddForm').style.display='block';
+  document.getElementById('apManageList').style.display='none';
+  document.getElementById('apName').value = m.name;
+  document.getElementById('apLocation').value = m.location;
+  document.getElementById('apDesc').value = m.desc;
+  document.getElementById('apCat').value = m.cat;
+  document.getElementById('apModel').value = m.model;
+  document.getElementById('apColor').value = m.color;
+  document.getElementById('apYear').value = m.year;
+  document.getElementById('apHeight').value = m.height;
+  document.getElementById('apArea').value = m.area;
+  document.getElementById('apFreeCheck').checked = m.free;
+  document.getElementById('apPriceField').style.display = m.free ? 'none' : 'block';
+  document.getElementById('apPrice').value = m.price || '';
+  document.getElementById('apTasks').value = m.tasks.join('\n');
+}
+
+function deleteMaket(id) {
+  const m = makets.find(x=>x.id===id);
+  if(!confirm(m.name+' maketini o\'chirishni tasdiqlaysizmi?')) return;
+  makets = makets.filter(x=>x.id!==id);
+  renderMakets();
+  closeAdminPanel();
+  toast(m.name+' o\'chirildi!','success');
+}
+
+function openEditPrice(id) {
+  editingMaketId = id;
+  const m = makets.find(x=>x.id===id);
+  document.getElementById('epMaketName').textContent = m.name;
+  document.getElementById('epCurPrice').textContent = m.free ? 'Bepul' : m.price.toLocaleString('uz-UZ')+' so\'m';
+  document.getElementById('epFreeCheck').checked = m.free;
+  document.getElementById('epNewPrice').value = m.price || '';
+  document.getElementById('epPriceField2').style.display = m.free ? 'none' : 'block';
+  document.getElementById('editPriceOverlay').classList.add('open');
+}
+function closeEditPrice() { document.getElementById('editPriceOverlay').classList.remove('open'); }
+function saveEditPrice() {
+  const m = makets.find(x=>x.id===editingMaketId);
+  const isFree = document.getElementById('epFreeCheck').checked;
+  const newPrice = parseInt(document.getElementById('epNewPrice').value) || 0;
+  if(!isFree && !newPrice){toast('Narx kiriting!','error');return;}
+  m.free = isFree;
+  m.price = isFree ? 0 : newPrice;
+  closeEditPrice();
+  renderMakets();
+  toast(m.name+' narxi yangilandi: '+(isFree?'Bepul':newPrice.toLocaleString('uz-UZ')+' so\'m'),'success');
+}
+
+// ── TOAST ─────────────────────────────────────
+function toast(msg, type='success') {
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const c={success:'#10b981',error:'#ef4444',info:'#3b82f6'};
+  const ic={success:'✓',error:'✕',info:'ℹ'};
+  const t=document.createElement('div');
+  t.className='toast';
+  t.innerHTML=`<span style="width:20px;height:20px;border-radius:50%;background:${c[type]};display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;">${ic[type]}</span>${msg}`;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.animation='toastOut .25s ease forwards';setTimeout(()=>t.remove(),260);},3200);
+}
+
+// ── INIT ─────────────────────────────────────
+const userData = JSON.parse(localStorage.getItem('srl_user')||'null');
+if(userData) {
+  isLoggedIn = true;
+  isAdmin = userData.role === 'admin';
+  document.getElementById('navLoginBtn').style.display = 'none';
+  document.getElementById('navRegBtn').textContent = userData.name?.split(' ')[0] || 'Kabinet';
+  document.getElementById('navRegBtn').onclick = () => window.location.href = isAdmin ? 'admin.html' : 'dashboard.html';
+}
+if(isAdmin) {
+  document.getElementById('adminBar').style.display = 'flex';
+  document.getElementById('labHero').classList.add('has-admin-bar');
+  document.getElementById('labMain').classList.remove('no-sidebar');
+}
+// Add submit btn id for edit support
+setTimeout(()=>{
+  const apActions = document.querySelector('#apAddForm .ap-actions .ap-submit');
+  if(apActions) apActions.id='apSubmitBtn';
+}, 100);
+
+// Overlay close on backdrop click
+['adminPanelOverlay','editPriceOverlay'].forEach(id=>{
+  document.getElementById(id).addEventListener('click', function(e){
+    if(e.target===this) this.classList.remove('open');
+  });
+});
+
+renderMakets();
+</script>
+</body>
+</html>
