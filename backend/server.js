@@ -13,6 +13,14 @@ const path         = require('path');
 
 const app = express();
 
+// Serverga HTML, CSS va JS fayllaringiz bir pog'ona tepada ekanligini aytamiz
+app.use(express.static(path.join(__dirname, '../')));
+
+// Bosh sahifaga kirilganda index.html faylini yuboramiz
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../index.html'));
+});
+
 // ── Config ──────────────────────────────────
 const PORT     = process.env.PORT     || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
