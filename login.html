@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Kirish — SilkroadLab</title>
+  <title>Kirish — SilkroadLab-XR</title>
   <link rel="stylesheet" href="styles.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
@@ -115,7 +115,7 @@
       <a href="index.html" class="auth-logo">
         <div ><img src="Logo.svg" width="60"></div>
         <div>
-          <div class="auth-logo-title">SilkroadLab</div>
+          <div class="auth-logo-title">SilkroadLab-XR</div>
           <div class="auth-logo-sub">Virtual til o'rganish laboratoriyasi</div>
         </div>
       </a>
@@ -146,7 +146,7 @@
       <!-- Mobile logo -->
       <a href="index.html" class="auth-logo" style="display:none;margin-bottom:32px;" id="mobileLogo">
         <div class="auth-logo-icon" style="border-color:var(--navy);color:var(--navy);"><i class="fa-solid fa-torii-gate"></i></div>
-        <div><div class="auth-logo-title" style="color:var(--navy);">SilkroadLab</div></div>
+        <div><div class="auth-logo-title" style="color:var(--navy);">SilkroadLab-XR</div></div>
       </a>
 
       <div class="auth-form-title">Xush kelibsiz! 👋</div>
@@ -194,8 +194,8 @@
       </button>
 
       <div class="admin-hint">
-        <strong>Admin kirish:</strong> admin@silkroadlab.uz / admin123<br>
-        <strong>Demo foydalanuvchi:</strong> demo@silkroadlab.uz / demo123
+        <strong>Admin kirish:</strong> admin@SilkroadLab-XR.uz / admin123<br>
+        <strong>Demo foydalanuvchi:</strong> demo@SilkroadLab-XR.uz / demo123
       </div>
 
       <div class="auth-switch">
@@ -239,7 +239,7 @@ function doLogin(){
   if(!email||!pass){showNotification("Email va parolni kiriting!",'error');return;}
 
   // Admin check
-  if(email==='admin@silkroadlab.uz'&&pass==='admin123'){
+  if(email==='admin@SilkroadLab-XR.uz'&&pass==='admin123'){
     localStorage.setItem('srl_user',JSON.stringify({name:'Admin',email,role:'admin'}));
     localStorage.setItem('srl_token','admin-token-demo');
     showNotification('Admin sifatida kirildingiz!','success');
@@ -247,7 +247,7 @@ function doLogin(){
     return;
   }
   // Demo user check
-  if(email==='demo@silkroadlab.uz'&&pass==='demo123'){
+  if(email==='demo@SilkroadLab-XR.uz'&&pass==='demo123'){
     localStorage.setItem('srl_user',JSON.stringify({name:'Demo Foydalanuvchi',email,role:'user'}));
     localStorage.setItem('srl_token','user-token-demo');
     showNotification('Xush kelibsiz!','success');
